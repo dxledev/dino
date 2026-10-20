@@ -1,6 +1,6 @@
 # Dino
 
-Dino is a portable, native C++20 endless runner built with Qt 6. Jump over cacti, duck beneath birds, and keep going as the run gets faster. Its pixel-art stage and gameplay are adapted from omarchy-dino. Its game engine is independent of Qt, and its palette can be customized or followed from a file.
+Dino is a portable, native C++20 endless runner built with Qt 6. Jump over cacti, duck beneath birds, and keep going as the run gets faster. Its pixel-art stage and gameplay are adapted from [omarchy-dino](https://github.com/Saikomantisu/omarchy-dino). Its game engine is independent of Qt, and its palette can be customized or followed from a file.
 
 ## Build and test
 
