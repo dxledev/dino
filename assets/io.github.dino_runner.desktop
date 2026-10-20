@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Dino
+GenericName=Endless Runner
+Comment=Jump and duck through an endless run
+Exec=dino
+Icon=io.github.dino_runner
+Terminal=false
+Categories=Game;
+StartupNotify=true
