@@ -1,4 +1,5 @@
 #include "game_view.h"
+#include "sprite_renderer.h"
 #include <QFocusEvent>
 #include <QFontDatabase>
 #include <QKeyEvent>
@@ -10,20 +11,6 @@
 namespace dino {
 namespace {
 QRectF rectangle(const Rect &r) { return {r.x, r.y, r.width, r.height}; }
-void drawSprite(QPainter &p, const Sprite &shape, const QRectF &bounds, const QColor &color) {
-    const double pixelWidth = bounds.width() * 2 / shape.width;
-    const double pixelHeight = bounds.height() * 2 / shape.height;
-    for (int y = 0; y < static_cast<int>(shape.rows.size()); ++y) {
-        const auto row = shape.rows[y];
-        for (int x = 0; x < static_cast<int>(row.size());) {
-            if (row[x] != '#') { ++x; continue; }
-            const int start = x;
-            while (x < static_cast<int>(row.size()) && row[x] == '#') ++x;
-            p.fillRect(QRectF(bounds.x() + start * pixelWidth, bounds.y() + y * pixelHeight,
-                              (x - start) * pixelWidth, pixelHeight), color);
-        }
-    }
-}
 bool isJumpKey(int key) {
     return key == Qt::Key_Space || key == Qt::Key_Up || key == Qt::Key_W || key == Qt::Key_K;
 }
@@ -36,7 +23,7 @@ QFont gameFont(int size, bool bold = false) {
 }
 void drawDinosaur(QPainter &p, const QRectF &bounds, const QColor &color, bool duck, int stride) {
     const auto id = duck ? (stride ? SpriteId::DuckB : SpriteId::DuckA) : SpriteId::Stand;
-    drawSprite(p, sprite(id), bounds, color);
+    drawSprite(p, id, bounds, color);
 }
 GameView::GameView(QWidget *parent) : QWidget(parent), theme_(defaultTheme()) {
     setObjectName("gameView");
@@ -79,7 +66,7 @@ void GameView::drawLandscape(QPainter &p, double worldHeight) {
     for (int i = 0; i < 3; ++i) {
         double x = std::fmod(285. + i * 197. - distance * .2, worldWidth_ + 80.);
         if (x < 0) x += worldWidth_ + 80.;
-        drawSprite(p, sprite(SpriteId::Cloud), QRectF(x - 46., worldHeight * (.16 + i * .05), 46., 12.), cloudColor);
+        drawSprite(p, SpriteId::Cloud, QRectF(x - 46., worldHeight * (.16 + i * .05), 46., 12.), cloudColor);
     }
     if (engine_.night() > 0) {
         auto stars = theme_.colors["muted"]; stars.setAlphaF(stars.alphaF() * engine_.night() * .6);
@@ -99,7 +86,7 @@ void GameView::drawLandscape(QPainter &p, double worldHeight) {
 }
 void GameView::drawObstacles(QPainter &p) {
     for (const auto &obstacle : engine_.obstacles())
-        drawSprite(p, sprite(engine_.obstacleSprite(obstacle)), rectangle(obstacle.bounds), theme_.colors["text"]);
+        drawSprite(p, engine_.obstacleSprite(obstacle), rectangle(obstacle.bounds), theme_.colors["text"]);
 }
 void GameView::drawScore(QPainter &p) {
     p.setFont(gameFont(11, true));
@@ -148,7 +135,7 @@ void GameView::paintEvent(QPaintEvent *) {
     drawObstacles(p);
     auto id = engine_.playerSprite();
     if (engine_.state() == GameState::Ready && idleClock_.elapsed() % 3500 < 130) id = SpriteId::Blink;
-    drawSprite(p, sprite(id), rectangle(engine_.playerBounds()), theme_.colors["accent"]);
+    drawSprite(p, id, rectangle(engine_.playerBounds()), theme_.colors["accent"]);
     p.restore();
     drawScore(p); drawPrompt(p, worldHeight);
 }

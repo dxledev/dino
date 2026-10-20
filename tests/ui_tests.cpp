@@ -1,7 +1,9 @@
 #include "ui/window.h"
+#include "ui/sprite_renderer.h"
 #include "ui/theme_watcher.h"
 #include <QtTest>
 #include <QApplication>
+#include <cmath>
 #include <QDir>
 #include <QFile>
 #include <QLabel>
@@ -25,6 +27,47 @@ void screenshot(QWidget &widget, const QString &name) {
 class UiTests : public QObject {
     Q_OBJECT
 private slots:
+    void spritesHaveNoSeamsAtFractionalScales() {
+        for (double ratio : {1.0, 1.25, 1.5, 2.0}) {
+            for (double offset : {0.0, 0.17, 0.5, 0.93}) {
+                for (int index = 0; index <= static_cast<int>(dino::SpriteId::Cloud); ++index) {
+                    const auto id = static_cast<dino::SpriteId>(index);
+                    const auto &shape = dino::sprite(id);
+                    QImage image(800, 2200, QImage::Format_ARGB32_Premultiplied);
+                    image.setDevicePixelRatio(ratio); image.fill(Qt::transparent);
+                    const QColor color("#d5b36e");
+                    QPainter painter(&image);
+                    painter.setRenderHint(QPainter::Antialiasing, false);
+                    const double scale = 1992.0 / 600.0;
+                    painter.scale(scale, scale);
+                    painter.translate(0, 1052.0 / scale - 150.0 + offset);
+                    const auto transform = painter.deviceTransform();
+                    dino::drawSprite(painter, id, QRectF(50, 140 - shape.height, shape.width, shape.height), color);
+                    painter.end();
+                    for (int y = 1; y < static_cast<int>(shape.rows.size()); ++y) {
+                        for (int x = 0; x < static_cast<int>(shape.rows[y].size()); ++x) {
+                            if (shape.rows[y][x] != '#' || x >= static_cast<int>(shape.rows[y - 1].size())
+                                || shape.rows[y - 1][x] != '#') continue;
+                            const auto sharedEdge = transform.mapRect(QRectF(50 + x * 2 + .5, 140 - shape.height + y * 2 - .5, 1, 1));
+                            for (int py = static_cast<int>(std::ceil(sharedEdge.top())); py < sharedEdge.bottom(); ++py)
+                                for (int px = static_cast<int>(std::ceil(sharedEdge.left())); px < sharedEdge.right(); ++px)
+                                    QCOMPARE(image.pixelColor(px, py), color);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    void spriteTintUpdatesPreserveTransparency() {
+        for (const QColor color : {QColor(Qt::red), QColor(Qt::blue), QColor(255, 0, 0, 128)}) {
+            QImage image(42, 40, QImage::Format_ARGB32_Premultiplied); image.fill(Qt::transparent);
+            QPainter painter(&image);
+            dino::drawSprite(painter, dino::SpriteId::Stand, QRectF(0, 0, 42, 40), color);
+            painter.end();
+            QCOMPARE(image.pixelColor(30, 6), color);
+            QCOMPARE(image.pixelColor(26, 2).alpha(), 0);
+        }
+    }
     void keyboardControlsKeepRunGoing() {
         QTemporaryDir directory;
         const auto theme = dino::defaultTheme();
