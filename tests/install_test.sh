@@ -72,7 +72,7 @@ check /usr/bin/test "$(/usr/bin/readlink -- "$prefix/share/applications/$desktop
 check /usr/bin/grep -Fxq "Exec=\"$prefix/bin/dino\" --config-dir \"$config_directory\"" \
     "$prefix/bin/applications/$desktop_id.desktop"
 check /usr/bin/test -f "$prefix/share/icons/hicolor/scalable/apps/$desktop_id.svg"
-check /usr/bin/grep -Fq 'fill="currentColor"' \
+check /usr/bin/grep -Fq 'fill="#6fd68a"' \
     "$prefix/share/icons/hicolor/scalable/apps/$desktop_id.svg"
 
 expected_apps_list="$temporary_directory/apps-list-expected"

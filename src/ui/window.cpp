@@ -62,9 +62,7 @@ void Window::applyTheme() {
         "QLabel#keyHints { color: %3; }"
         "QLabel#status { color: %3; font-size: 11px; }")
         .arg(color("background"), color("text"), color("muted"), color("accent")));
-    QPixmap icon(64, 64); icon.fill(Qt::transparent);
-    { QPainter p(&icon); drawDinosaur(p, QRectF(7, 7, 50, 48), theme.colors["accent"], false, 0); }
-    setWindowIcon(QIcon(icon)); game_->setTheme(theme); clearThemeError();
+    setWindowIcon(QIcon::fromTheme("io.github.dino_runner")); game_->setTheme(theme); clearThemeError();
 }
 void Window::clearThemeError() {
     if (status_->text().startsWith("Theme unchanged:")) status_->hide();
